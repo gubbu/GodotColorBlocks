@@ -30,9 +30,19 @@ func _physics_process(delta):
 		if normal.x > 0.0 or normal.y > 0.0 or normal.z > 0.0:
 			selected_block -= normal
 		
-		dummy_placement.global_transform.origin = selected_block + normal
+		dummy_placement.global_transform.origin = selected_block
 		dummy_placement.visible = true
 		
+		if Input.is_action_just_pressed("Leftclick"):
+			if collider is Node:
+				var collider_parent = collider.get_parent()
+				if collider_parent is Node:
+					if collider_parent.is_in_group("terrain"):
+						print("terrain found")
+						var selected_block_x = int(selected_block.x)
+						var selected_block_y = int(selected_block.y)
+						var selected_block_z = int(selected_block.z)
+						collider_parent.destroy_block(selected_block_x, selected_block_y, selected_block_z)
 
 		
 		debug_label.text = "selected block:" + str(selected_block) + "selected normal:" + str(normal)

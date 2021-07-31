@@ -7,6 +7,13 @@ export (int) var chunk_y = 0
 export (int) var chunk_z = 0
 export (int) var worldseed = 0
 
+# an array of directorys containing changes in this chunk.
+# example: create air block at (0, 0, 0)
+# { pos: {x: 0, y: 0, z: 0}, change: {
+#						gen_mesh = false,
+#						color = Color(1.0, 0.0, 0.0),
+#						solid = false
+#				}}
 var changes = []
 
 # a cube made out of 6 quads, a quad is made out of 2 triangles
@@ -143,6 +150,7 @@ func cubeworld3D(cubeworld3Darray):
 	self.create_trimesh_collision()
 	#print(self.mesh.get_faces())
 
+#generate chunk using noise
 func generate_chunk():
 	var simplex_noise: OpenSimplexNoise = OpenSimplexNoise.new()
 	simplex_noise.seed = self.worldseed
@@ -172,23 +180,46 @@ func generate_chunk():
 			xz_plane.append(row)
 		chunk.append(xz_plane)
 	return chunk
+
 	
+func apply_changed_mesh():
+	var chunk = generate_chunk()
+	for change in self.changes:
+		var x = change.pos.x
+		var y = change.pos.y
+		var z = change.pos.z
+		chunk[y][x][z] = change.change
+	cubeworld3D(chunk)
+
 
 func generate_chunk_mesh():
 	var chunk = generate_chunk()
 	#print(chunk.size(), chunk[16*16*16/2 ..])
 	cubeworld3D(chunk)
 
-func generate_cube_mesh():
-	var surfacetool = SurfaceTool.new()
-	surfacetool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	for quad in TRIANGLECUBE:
-		var normal = quad.normal
-		for vertex in quad.vertecies:
-			surfacetool.add_normal(normal)
-			surfacetool.add_vertex(vertex)
+#takes global coordinates
+func destroy_block(x: int, y: int, z: int):
+	#check if block is in self:
+	var inside_x = self.chunk_x * CHUNKSIZE <= x and self.chunk_x * CHUNKSIZE + CHUNKSIZE > x
+	var inside_y = self.chunk_y * CHUNKSIZE <= y and self.chunk_y * CHUNKSIZE + CHUNKSIZE > y
+	var inside_z = self.chunk_z * CHUNKSIZE <= z and self.chunk_z * CHUNKSIZE + CHUNKSIZE > z
+	# check if block is in chunk: ...	
+	if not inside_x or not inside_y or not inside_z:
+		print("cant place it here ....") 
+		return
+	var local_x: int = x % CHUNKSIZE
+	var local_y: int = y % CHUNKSIZE
+	var local_z: int = z % CHUNKSIZE
+	# air block
+	var change = {
+			pos = {x = local_x, y = local_y, z = local_z},
+			change = {solid = false, gen_mesh = false}
+		}
+	if !self.changes.has(change):
+		self.changes.append(change)
+	else:
+		print("change already there")
+	self.apply_changed_mesh()
 	
-	self.mesh = surfacetool.commit()
-
 func _ready():
 	generate_chunk_mesh()
