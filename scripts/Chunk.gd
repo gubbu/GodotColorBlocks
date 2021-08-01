@@ -6,15 +6,16 @@ export (int) var chunk_x = 0
 export (int) var chunk_y = 0
 export (int) var chunk_z = 0
 export (int) var worldseed = 0
+export (SpatialMaterial) var material = preload("res://chunk_vertex_color_material.tres")
 
-# an array of directorys containing changes in this chunk.
-# example: create air block at (0, 0, 0)
+# a hashmap of directorys containing changes in this chunk. keys: changed coordinate [x, y, z]: [int, int, int]
+# hahmap entry example: create air block at (0, 0, 0)
 # { pos: {x: 0, y: 0, z: 0}, change: {
 #						gen_mesh = false,
 #						color = Color(1.0, 0.0, 0.0),
 #						solid = false
 #				}}
-var changes = []
+var changes = {}
 
 # a cube made out of 6 quads, a quad is made out of 2 triangles
 const TRIANGLECUBE = [
@@ -147,7 +148,12 @@ func cubeworld3D(cubeworld3Darray):
 							# TODO: the outer shell of a chunk consists out of ... blocks with {gen_mesh = false}
 							surfacetool.add_vertex(vertex_coordinates)
 	self.mesh = surfacetool.commit()
+	#removing all children is needed, before the new collider is generated.
+	for n in self.get_children():
+		self.remove_child(n)
+		n.queue_free()
 	self.create_trimesh_collision()
+	self.mesh.surface_set_material(0, self.material)
 	#print(self.mesh.get_faces())
 
 #generate chunk using noise
@@ -184,7 +190,8 @@ func generate_chunk():
 	
 func apply_changed_mesh():
 	var chunk = generate_chunk()
-	for change in self.changes:
+	for key in self.changes:
+		var change = self.changes[key]
 		var x = change.pos.x
 		var y = change.pos.y
 		var z = change.pos.z
@@ -215,11 +222,30 @@ func destroy_block(x: int, y: int, z: int):
 			pos = {x = local_x, y = local_y, z = local_z},
 			change = {solid = false, gen_mesh = false}
 		}
-	if !self.changes.has(change):
-		self.changes.append(change)
-	else:
-		print("change already there")
+
+	self.changes[[local_x, local_y, local_z]] = change
+
 	self.apply_changed_mesh()
-	
+
+func place_block(x: int, y: int, z: int, color: Color):
+	#check if block is in self:
+	var inside_x = self.chunk_x * CHUNKSIZE <= x and self.chunk_x * CHUNKSIZE + CHUNKSIZE > x
+	var inside_y = self.chunk_y * CHUNKSIZE <= y and self.chunk_y * CHUNKSIZE + CHUNKSIZE > y
+	var inside_z = self.chunk_z * CHUNKSIZE <= z and self.chunk_z * CHUNKSIZE + CHUNKSIZE > z
+	# check if block is in chunk: ...	
+	if not inside_x or not inside_y or not inside_z:
+		print("cant place it here ....") 
+		return
+	var local_x: int = x % CHUNKSIZE
+	var local_y: int = y % CHUNKSIZE
+	var local_z: int = z % CHUNKSIZE
+	# air block
+	var change = {
+			pos = {x = local_x, y = local_y, z = local_z},
+			change = {solid = true, gen_mesh = true, color = color}
+		}
+	self.changes[[local_x, local_y, local_z]] = change
+	self.apply_changed_mesh()	
+
 func _ready():
 	generate_chunk_mesh()

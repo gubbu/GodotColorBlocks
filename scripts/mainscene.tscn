@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://scripts/Chunk.gd" type="Script" id=1]
 [ext_resource path="res://scripts/godmodecamera.gd" type="Script" id=2]
 [ext_resource path="res://scripts/Blockplacer.gd" type="Script" id=3]
 [ext_resource path="res://scripts/modulate_color.gd" type="Script" id=4]
+[ext_resource path="res://scripts/ColorPickerVisibilityOnEsc.gd" type="Script" id=5]
 
 [sub_resource type="CubeMesh" id=1]
 size = Vector3( 1, 1, 1 )
@@ -66,6 +67,17 @@ margin_bottom = 20.0
 rect_rotation = 45.0
 rect_pivot_offset = Vector2( 10, 10 )
 color = Color( 1, 1, 1, 0.305882 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ColorPicker" type="ColorPicker" parent="ChunkManager/GodModePlayer/Camera/RayCast"]
+margin_left = 711.0
+margin_top = -4.0
+margin_right = 1019.0
+margin_bottom = 458.0
+color = Color( 0, 0, 1, 1 )
+script = ExtResource( 5 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
