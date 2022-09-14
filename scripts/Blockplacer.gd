@@ -1,9 +1,5 @@
 extends RayCast
 
-
-# Declare member variables here. Examples:
-# var a = 2
-# var b = "text"
 onready var dummy_placement = $"../../../../DummyPlacement"
 onready var debug_label: Label = $Label
 onready var colorpicker: ColorPicker = $ColorPicker
@@ -11,10 +7,6 @@ onready var colorpicker: ColorPicker = $ColorPicker
 func _ready():
 	pass # Replace with function body.
 
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-#func _process(delta):
-#	pass
 
 
 func _physics_process(delta):

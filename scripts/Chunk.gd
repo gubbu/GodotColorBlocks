@@ -12,7 +12,7 @@ export (SpatialMaterial) var material = preload("res://chunk_vertex_color_materi
 # hahmap entry example: create air block at (0, 0, 0)
 # { pos: {x: 0, y: 0, z: 0}, change: {
 #						gen_mesh = false,
-#						color = Color(1.0, 0.0, 0.0),
+#						color = Color(1.0, 0.0, 0.0), # color optional here
 #						solid = false
 #				}}
 var changes = {}
@@ -212,7 +212,7 @@ func destroy_block(x: int, y: int, z: int):
 	var inside_z = self.chunk_z * CHUNKSIZE <= z and self.chunk_z * CHUNKSIZE + CHUNKSIZE > z
 	# check if block is in chunk: ...	
 	if not inside_x or not inside_y or not inside_z:
-		print("cant place it here ....") 
+		print("cant destroy block here ....") 
 		return
 	var local_x: int = x % CHUNKSIZE
 	var local_y: int = y % CHUNKSIZE
